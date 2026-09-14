@@ -1,0 +1,12 @@
+{
+  "name": "todo-e2e",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Testes E2E (Playwright) do To-Do List App",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0"
+  }
+}

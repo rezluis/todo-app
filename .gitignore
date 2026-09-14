@@ -1,0 +1,28 @@
+# Java / Maven
+backend/target/
+*.class
+*.jar
+
+# Node / E2E
+e2e/node_modules/
+e2e/test-results/
+e2e/playwright-report/
+
+# Ambiente e terminal
+.env*
+*.log
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Dados locais
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
