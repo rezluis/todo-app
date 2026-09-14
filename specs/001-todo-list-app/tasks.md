@@ -179,7 +179,7 @@ ANTES da implementação (espera-se que falhem) e executadas em CI/validação.
 ### Tests for User Story 6 (OBRIGATÓRIOS - constituição Princípio III) ⚠️
 
 - [x] T042 [P] [US6] E2E cenário "Persistência pós-recarga" em `e2e/tests/todo-persistence.spec.js`: criar, editar, marcar concluída e recarregar a página → todas as tarefas permanecem com título, descrição e status corretos
-- [ ] T043 [US6] Validação de persistência em reinício: script/cenário que executa `docker compose restart backend` (ou down/up sem `-v`) e confere que os dados continuam presentes (volume nomeado `todo-data` em `/data`, schema.sql idempotente não recria dados)
+- [x] T043 [US6] Validação de persistência em reinício: script/cenário que executa `docker compose restart backend` (ou down/up sem `-v`) e confere que os dados continuam presentes (volume nomeado `todo-data` em `/data`, schema.sql idempotente não recria dados)
 
 ### Implementation for User Story 6
 
@@ -212,12 +212,12 @@ ANTES da implementação (espera-se que falhem) e executadas em CI/validação.
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T048 Run suíte de testes do back-end: `cd backend && mvn test` → verde
-- [ ] T049 Run suíte E2E full-stack: `cd e2e && npm ci && npx playwright test` → verde
+- [x] T048 Run suíte de testes do back-end: `cd backend && mvn test` → verde
+- [x] T049 Run suíte E2E full-stack: `cd e2e && npm ci && npx playwright test` → verde
 - [x] T050 [P] Validar responsividade com 100 tarefas (FR-012, SC-005): cenário Playwright ou script de seed criando 100 tarefas e verificando operações funcionais e tela legível
 - [x] T051 [P] Documentação: `README.md` na raiz com setup `docker compose up --build`, portas e link para `specs/001-todo-list-app/quickstart.md`
 - [x] T052 Code cleanup e passada de conformidade com a constituição (G1–G5): simplicidade de deps, clean code, testes cobrindo comportamentos, desacoplamento via contrato REST, SQLite leve
-- [ ] T053 Validação final pelo `quickstart.md`: executar os 9 cenários + verificações `curl` da API (201/200/204/404/400) e conferir critérios SC-001 a SC-007
+- [x] T053 Validação final pelo `quickstart.md`: executar os 9 cenários + verificações `curl` da API (201/200/204/404/400) e conferir critérios SC-001 a SC-007
 
 ---
 
