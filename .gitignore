@@ -15,6 +15,8 @@ e2e/playwright-report/
 Thumbs.db
 *.tmp
 *.swp
+*.opencode/
+*.specify/
 
 # IDE
 .vscode/
