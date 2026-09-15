@@ -21,7 +21,7 @@ pessoal, um usuário).
 | Campo | Tipo | Obrigatório (payload) | Regras |
 |-------|------|-----------------------|--------|
 | `id` | long | — (server) | gerado pelo banco |
-| `title` | string | sim | vazio/espacos → "Sem título"; max 120 |
+| `title` | string | sim | obrigatório (não vazio/blank); max 120 |
 | `description` | string | não | ausência tratada como sem descrição |
 | `status` | string | sim (na criação) | `pending` / `completed` |
 | `createdAt` | long | — (server) | epoch ms |
@@ -44,8 +44,9 @@ Corpo (aplica-se edge case do título):
 
 - `201 Created` — corpo com a tarefa criada (incl. `id`, `createdAt`,
   `updatedAt`; `status` assume `pending`).
-- `400 Bad Request` — título > 120 caracteres, `status` inválido no corpo ou
-  payload malformado. Body de erro: `{ "message": "..." }`.
+- `400 Bad Request` — título ausente, vazio ou só espaços, título > 120
+  caracteres, `status` inválido no corpo ou payload malformado. Body de erro:
+  `{ "message": "..." }`.
 
 ### `GET /api/tasks/{id}` — visualizar tarefa
 
@@ -61,7 +62,9 @@ Corpo (campos opcionais; apenas os presentes são alterados):
 ```
 
 - `200 OK` — tarefa atualizada (com novos `updatedAt`).
-- Título vazio/espaços no body → armazenado "Sem título" (FR-007).
+- Título ausente no body → campo mantém o valor atual (atualização parcial).
+- Título vazio/só espaços no body → `400 Bad Request` com
+  `{ "message": "Título é obrigatório." }` (FR-007).
 - `400 Bad Request` — título > 120 caracteres ou status inválido.
 - `404 Not Found` — id inexistente.
 
@@ -82,8 +85,11 @@ Códigos utilizados: `400` (validação/payload), `404` (recurso inexistente),
 
 ## Casos de borda no contrato
 
-- Criar/atualizar com `title` ausente, `null`, `""` ou `"   "` → salvo como
-  `"Sem título"` (FR-001/002/007) — **não** gera 400.
+- Criar com `title` ausente, `null`, `""` ou `"   "` → `400 Bad Request` com
+  `{ "message": "Título é obrigatório." }` (FR-001/FR-002) — **não gera** 201.
+- Atualizar com `title` ausente ou `null` → campo mantém o valor atual (sem
+  400). Atualizar com `title` `""` ou `"   "` → `400 Bad Request` com
+  `{ "message": "Título é obrigatório." }` (FR-007).
 - `status` inválido NUNCA é aceito silenciosamente (400).
-- Só espaços não equivalem a título vazio quando classificam como texto; a
-  regra vale para o valor final do campo.
+- Só espaços não equivalem a um título válido; a obrigatoriedade vale para o
+  valor final do campo (após reconhecer `""`/espaços como vazio).

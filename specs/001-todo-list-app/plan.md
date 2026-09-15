@@ -12,7 +12,7 @@ uma API RESTful exposta por um back-end Spring Boot (Java). Os dados são
 persistidos em SQLite (arquivo único, embarcado) e a solução é orquestrada com
 Docker Compose; um contêiner nginx serve o front-end estático e faz proxy do
 caminho `/api/*` para o back-end (same-origin, eliminando CORS). CRUD completo
-(título com padrão "Sem título" se vazio, descrição opcional, status
+(título obrigatório, descrição opcional, status
 pendente/concluída), ordenação determinística (pendentes primeiro; mais
 recentes primeiro dentro do grupo) e persistência garantida por volume nomeado.
 Testes automatizados obrigatórios: JUnit/MockMvc no back-end e Playwright
@@ -97,7 +97,7 @@ backend/                    # API REST — Spring Boot (Java 21)
     │   │   ├── TodoApplication.java
     │   │   ├── api/TaskController.java       # endpoints REST
     │   │   ├── domain/Task.java              # modelo/record da tarefa
-    │   │   ├── service/TaskService.java      # regras de negócio (título padrão, validação)
+    │   │   ├── service/TaskService.java      # regras de negócio (título obrigatório, validação)
     │   │   └── repo/TaskRepository.java      # acesso a dados (JdbcTemplate)
     │   └── resources/
     │       ├── application.properties        # datasource SQLite, init mode=always

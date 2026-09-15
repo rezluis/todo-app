@@ -9,7 +9,7 @@ Tabela única `tasks`. Representa um item da lista de tarefas.
 | Campo | Tipo SQL | Restrições | Regras derivadas do spec |
 |-------|----------|------------|--------------------------|
 | `id` | INTEGER | PRIMARY KEY AUTOINCREMENT | Identificador único interno. |
-| `title` | TEXT | NOT NULL, ≤ 120 caracteres | FR-001/FR-002: se vazio ou só espaços no salvamento → armazena "Sem título". |
+| `title` | TEXT | NOT NULL, ≤ 120 caracteres | FR-001/FR-002: obrigatório; vazio/só espaços → rejeitado (400) no salvamento. |
 | `description` | TEXT | NULL | Opcional (FR-001); sem limite rígido, truncada visualmente na UI. |
 | `status` | TEXT | NOT NULL, DEFAULT 'pending', CHECK in ('pending','completed') | FR-005: alternância entre pendente/concluída. |
 | `created_at` | INTEGER | NOT NULL | Timestamp (epoch ms) de criação — base da ordenação "mais recente primeiro". |
@@ -23,9 +23,11 @@ Tabela única `tasks`. Representa um item da lista de tarefas.
 ## Regras de validação (origem nos requisitos)
 
 - **Título (FR-001, FR-002, FR-007, FR-010)**: normalização "back-side".
-  Título nulo, vazio (`""`) ou somente espaços → persistido como "Sem título"
-  no create e no update. Título com mais de 120 caracteres → rejeitado (HTTP
-  400), mensagem clara (FR-010).
+  Título nulo, vazio (`""`) ou somente espaços → rejeitado (HTTP 400) com a
+  mensagem "Título é obrigatório." no create e no update (quando enviado no
+  payload). Em `update`, `title` ausente no payload mantém o título atual.
+  Título com mais de 120 caracteres → rejeitado (HTTP 400), mensagem clara
+  (FR-010).
 - **Descrição (FR-001)**: opcional; se nula no payload, tratada como ausente.
 - **Status (FR-005)**: somente `pending` / `completed`; valor inválido →
   HTTP 400.
