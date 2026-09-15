@@ -14,7 +14,11 @@
 
 - Q: Como a lista de tarefas deve ser ordenada para o usuário? → A: Pendentes primeiro, depois concluídas; dentro de cada grupo, as mais recentes primeiro.
 - Q: Haverá suporte a múltiplos usuários (contas, login e separação de tarefas por usuário)? → A: Não — uso pessoal de um único usuário, sem login e sem separação de dados.
-- Q: Quando o usuário tenta salvar uma tarefa com o título vazio (incluindo somente espaços)? → A: A tarefa é salva normalmente com o título padrão automático "Sem título".
+- Q: Quando o usuário tenta salvar uma tarefa com o título vazio (incluindo somente espaços)? → A: A tarefa não é salva; o título é obrigatório e o sistema rejeita com a mensagem "Título é obrigatório.".
+
+### Session 2026-09-15 (issue #1 — manutenção perfectiva)
+
+- Q: O comportamento de salvar tarefas sem título com o padrão "Sem título" continua valendo? → A: Não. Esse fallback foi removido (issue #1). A partir desta mudança, criar ou editar uma tarefa com título vazio, nulo ou apenas espaços é rejeitado com a mensagem "Título é obrigatório.", tanto na API (HTTP 400) quanto na interface. A regra vale apenas para novos salvamentos; tarefas já existentes não são alteradas.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -36,8 +40,8 @@ verificando que ela aparece na lista com título, descrição e status "Pendente
    o título "Comprar leite" e confirma a criação, **Then** a tarefa "Comprar
    leite" aparece na lista com status "Pendente" e descrição vazia.
 2. **Given** a aplicação aberta, **When** o usuário tenta criar uma tarefa sem
-   título, **Then** a tarefa é criada com o título padrão "Sem título" e status
-   "Pendente".
+   título (vazio ou só espaços), **Then** a criação é bloqueada, uma mensagem
+   "Título é obrigatório." é exibida e nenhuma tarefa é criada.
 3. **Given** a aplicação aberta, **When** o usuário cria uma tarefa com título
    e descrição opcional preenchida, **Then** a tarefa é salva com título,
    descrição e status "Pendente".
@@ -107,8 +111,8 @@ verificando que título e descrição refletem os novos valores após salvar.
    usuário altera o título para "Comprar leite e pão" e salva, **Then** a lista
    exibe o novo título.
 2. **Given** uma tarefa existente, **When** o usuário salva a edição com o
-   título em branco, **Then** o título passa a ser o padrão "Sem título" e os
-   demais dados são mantidos.
+   título em branco, **Then** a edição é rejeitada com a mensagem "Título é
+   obrigatório." e os demais dados são mantidos.
 3. **Given** uma tarefa existente, **When** o usuário edita apenas a descrição,
    **Then** o sistema atualiza a descrição e mantém os demais dados intactos.
 
@@ -187,8 +191,8 @@ status mistos e verificando que a ordem exibida segue a regra definida.
 ### Edge Cases
 
 - O que acontece quando o usuário tenta salvar uma tarefa só com espaços no
-  título? O título é tratado como vazio e a tarefa recebe o padrão "Sem
-  título".
+  título? O título é tratado como vazio e o salvamento é rejeitado com a
+  mensagem "Título é obrigatório.".
 - Como o sistema lida com títulos e descrições muito longos? Deve aceitar textos
   razoáveis sem quebrar a interface; textos excessivos devem ser limitados
   (título) ou truncados visualmente (descrição).
@@ -206,11 +210,12 @@ status mistos e verificando que a ordem exibida segue a regra definida.
 ### Functional Requirements
 
 - **FR-001**: System MUST permitir criar uma tarefa informando um título e uma
-  descrição opcional; se o título for vazio ou só espaços, o sistema DEVE
-  atribuir automaticamente o título padrão "Sem título".
+  descrição opcional; o título é obrigatório e o sistema DEVE rejeitar a
+  criação com a mensagem "Título é obrigatório." quando ele for vazio, nulo ou
+  apenas espaços.
 - **FR-002**: System MUST tratar um título composto apenas por espaços como
-  título vazio e aplicar o padrão "Sem título", sem perder os demais dados
-  digitados.
+  título vazio e rejeitar o salvamento com a mensagem "Título é obrigatório.",
+  sem perder os demais dados digitados.
 - **FR-003**: System MUST exibir a lista de todas as tarefas com título,
   descrição e status (pendente/concluída).
 - **FR-004**: System MUST exibir uma mensagem amigável de estado vazio quando
@@ -219,9 +224,9 @@ status mistos e verificando que a ordem exibida segue a regra definida.
   "Pendente" e "Concluída" com um único clique.
 - **FR-006**: System MUST permitir editar o título e a descrição de uma tarefa
   existente, salvando as alterações.
-- **FR-007**: System MUST, ao salvar uma edição com título vazio ou só
-  espaços, aplicar o título padrão "Sem título" mantendo os demais dados da
-  tarefa.
+- **FR-007**: System MUST, ao salvar uma edição com título vazio, nulo ou só
+  espaços, rejeitar a alteração com a mensagem "Título é obrigatório." mantendo
+  os demais dados da tarefa.
 - **FR-008**: System MUST permitir excluir uma tarefa, removendo-a da lista.
 - **FR-009**: System MUST persistir todas as tarefas e seus status de modo que
   permaneçam íntegros após recarregar ou reabrir a aplicação.
@@ -238,9 +243,8 @@ status mistos e verificando que a ordem exibida segue a regra definida.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Tarefa**: Representa um item da lista. Atributos: título (texto; se vazio
-  ou só espaços, assume o padrão "Sem título"), descrição (opcional, texto) e
-  status (pendente ou concluída).
+- **Tarefa**: Representa um item da lista. Atributos: título (texto obrigatório,
+  não vazio), descrição (opcional, texto) e status (pendente ou concluída).
 - **Lista de Tarefas**: Coleção de tarefas exibida ao usuário; sua ordem e
   persistência seguem regras definidas nos requisitos.
 
@@ -276,9 +280,9 @@ status mistos e verificando que a ordem exibida segue a regra definida.
   serviço de dados da aplicação, seguindo as decisões de arquitetura do projeto.
 - A interface deve ser simples e intuitiva, priorizando as ações de frequência
   mais alta (criar e marcar concluída).
-- O título é informado pelo usuário; se vazio (ou só espaços), assume
-  automaticamente o padrão "Sem título". A descrição é opcional e pode ser
-  deixada em branco.
+- O título é informado pelo usuário e é obrigatório; títulos vazios (ou só
+  espaços) são rejeitados com a mensagem "Título é obrigatório.". A descrição é
+  opcional e pode ser deixada em branco.
 - Duplicidade de títulos é permitida; a lista não exige títulos únicos.
 - Requisito de acessibilidade básica (uso por teclado e leitores de tela) deve
   ser considerado sem custo adicional relevante.

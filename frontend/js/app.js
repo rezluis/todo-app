@@ -19,6 +19,10 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+function isBlank(value) {
+  return value == null || value.trim() === '';
+}
+
 function showError(message) {
   errorEl.textContent = message;
   errorEl.hidden = false;
@@ -64,6 +68,10 @@ async function reloadTasks() {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
+  if (isBlank(titleInput.value)) {
+    showError('Título é obrigatório.');
+    return;
+  }
   const payload = {
     title: titleInput.value,
     description: descriptionInput.value || null,
@@ -141,6 +149,10 @@ function startEdit(li, task) {
   const editForm = li.querySelector('.task__edit-form');
   editForm.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (isBlank(titleField.value)) {
+      showError('Título é obrigatório.');
+      return;
+    }
     const payload = {
       title: titleField.value,
       description: editForm.querySelector('.task__edit-description').value || null,

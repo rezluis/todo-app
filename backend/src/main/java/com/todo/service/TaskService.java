@@ -13,7 +13,6 @@ import com.todo.repo.TaskRepository;
 @Service
 public class TaskService {
 
-    public static final String DEFAULT_TITLE = "Sem título";
     public static final int MAX_TITLE_LENGTH = 120;
     public static final String STATUS_PENDING = "pending";
     public static final String STATUS_COMPLETED = "completed";
@@ -60,7 +59,7 @@ public class TaskService {
 
     private String normalizeTitle(String title) {
         if (title == null || title.isBlank()) {
-            return DEFAULT_TITLE;
+            throw new IllegalArgumentException("Título é obrigatório.");
         }
         String trimmed = title.strip();
         if (trimmed.length() > MAX_TITLE_LENGTH) {

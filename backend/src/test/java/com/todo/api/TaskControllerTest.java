@@ -39,12 +39,15 @@ class TaskControllerTest extends BaseDbTest {
     }
 
     @Test
-    void postWithBlankTitleFallsBackToDefaultTitle() throws Exception {
-        mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"   \"}"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value(TaskService.DEFAULT_TITLE));
+    void postWithBlankNullOrSpacesOnlyTitleRejectsWithBadRequest() throws Exception {
+        String[] bodies = { "{\"title\":\"\"}", "{\"title\":\"   \"}", "{}", "{\"title\":null}" };
+        for (String body : bodies) {
+            mockMvc.perform(post("/api/tasks")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("Título é obrigatório."));
+        }
     }
 
     @Test
@@ -134,14 +137,23 @@ class TaskControllerTest extends BaseDbTest {
     }
 
     @Test
-    void putWithBlankTitleAndLongTitleHandled() throws Exception {
+    void putWithBlankTitleRejectsAndKeepsPreviousTitle() throws Exception {
         Task created = service.create(new TaskRequest("Antes", null, null));
 
         mockMvc.perform(put("/api/tasks/{id}", created.id())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"  \"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Título é obrigatório."));
+
+        mockMvc.perform(get("/api/tasks/{id}", created.id()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value(TaskService.DEFAULT_TITLE));
+                .andExpect(jsonPath("$.title").value("Antes"));
+    }
+
+    @Test
+    void putWithTitleOverLimitRejectsWithBadRequest() throws Exception {
+        Task created = service.create(new TaskRequest("Antes", null, null));
 
         String longTitle = "b".repeat(TaskService.MAX_TITLE_LENGTH + 1);
         mockMvc.perform(put("/api/tasks/{id}", created.id())

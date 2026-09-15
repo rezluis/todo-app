@@ -33,11 +33,29 @@ test('cria tarefa com título e descrição', async ({ page }) => {
   await expect(item.locator('.task__toggle')).not.toBeChecked();
 });
 
-test('cria tarefa sem título usando padrão "Sem título"', async ({ page }) => {
+test('cria tarefa sem título é bloqueada com mensagem de erro', async ({ page }) => {
   await page.goto('/');
   await createViaUi(page, '');
 
-  await expect(page.locator('.task').first().locator('.task__title')).toHaveText('Sem título');
+  await expect(page.locator('#error-message')).toBeVisible();
+  await expect(page.locator('#error-message')).toHaveText('Título é obrigatório.');
+  await expect(page.locator('.task')).toHaveCount(0);
+});
+
+test('editar deixando o título vazio exibe erro e mantém o título original', async ({ page }) => {
+  await page.goto('/');
+  await createViaUi(page, 'Título antigo', '');
+
+  const item = page.locator('.task').first();
+  await item.locator('.task__edit').click();
+  await item.locator('.task__edit-title').fill('');
+  await item.locator('.task__edit-form button[type="submit"]').click();
+
+  await expect(page.locator('#error-message')).toBeVisible();
+  await expect(page.locator('#error-message')).toHaveText('Título é obrigatório.');
+
+  await item.locator('.js-edit-cancel').click();
+  await expect(item.locator('.task__title')).toHaveText('Título antigo');
 });
 
 test('marca tarefa como concluída com um clique e desmarca', async ({ page }) => {
