@@ -29,14 +29,16 @@ class TaskServiceTest extends BaseDbTest {
     }
 
     @Test
-    void createWithBlankNullOrSpacesOnlyTitleFallsBackToDefaultTitle() {
-        Task blank = service.create(new TaskRequest("", "d", null));
-        Task whitespace = service.create(new TaskRequest("   ", "d", null));
-        Task absent = service.create(new TaskRequest(null, "d", null));
-
-        assertThat(blank.title()).isEqualTo(TaskService.DEFAULT_TITLE);
-        assertThat(whitespace.title()).isEqualTo(TaskService.DEFAULT_TITLE);
-        assertThat(absent.title()).isEqualTo(TaskService.DEFAULT_TITLE);
+    void createWithBlankNullOrSpacesOnlyTitleRejects() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> service.create(new TaskRequest("", "d", null)))
+                .withMessage("Título é obrigatório.");
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> service.create(new TaskRequest("   ", "d", null)))
+                .withMessage("Título é obrigatório.");
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> service.create(new TaskRequest(null, "d", null)))
+                .withMessage("Título é obrigatório.");
     }
 
     @Test
@@ -89,17 +91,21 @@ class TaskServiceTest extends BaseDbTest {
         assertThat(pending.status()).isEqualTo(TaskService.STATUS_PENDING);
         assertThat(completed.status()).isEqualTo(TaskService.STATUS_COMPLETED);
         assertThat(backToPending.status()).isEqualTo(TaskService.STATUS_PENDING);
+        assertThat(backToPending.title()).isEqualTo("Só status");
         assertThat(backToPending.updatedAt()).isGreaterThanOrEqualTo(created.updatedAt());
     }
 
     @Test
-    void updateWithBlankTitleFallsBackToDefaultTitle() {
-        Task created = service.create(new TaskRequest("Título", null, null));
+    void updateWithBlankTitleRejectsAndKeepsTaskUnchanged() {
+        Task created = service.create(new TaskRequest("Título", "desc original", null));
 
-        Task updated = service.update(created.id(), new TaskRequest("   ", "nova desc", null));
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> service.update(created.id(), new TaskRequest("   ", "nova desc", null)))
+                .withMessage("Título é obrigatório.");
 
-        assertThat(updated.title()).isEqualTo(TaskService.DEFAULT_TITLE);
-        assertThat(updated.description()).isEqualTo("nova desc");
+        Task stillThere = service.findById(created.id());
+        assertThat(stillThere.title()).isEqualTo("Título");
+        assertThat(stillThere.description()).isEqualTo("desc original");
     }
 
     @Test

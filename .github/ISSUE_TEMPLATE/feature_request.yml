@@ -1,0 +1,48 @@
+name: "✨ Feature Request"
+description: "Sugira uma melhoria ou nova funcionalidade"
+title: "[FEAT] "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Descreva sua sugestão de melhoria. Quanto mais detalhes, melhor!
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problema ou Necessidade"
+      description: "Qual problema esta feature resolve?"
+      placeholder: "Ex: Atualmente não é possível filtrar tarefas por data."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Solução Proposta"
+      description: "Como você imagina que isso deveria funcionar?"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: "Categoria"
+      description: "Que tipo de melhoria é esta?"
+      options:
+        - "Nova funcionalidade"
+        - "Melhoria de performance"
+        - "Melhoria de usabilidade (UX)"
+        - "Adaptação a novo ambiente/versão"
+        - "Segurança"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternativas Consideradas"
+      description: "Você pensou em outras formas de resolver isso?"
+    validations:
+      required: false

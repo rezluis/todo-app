@@ -1,0 +1,71 @@
+name: "🐛 Bug Report"
+description: "Reporte um comportamento incorreto ou falha no sistema"
+title: "[BUG] "
+labels: ["bug", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por reportar um bug! Preencha os campos abaixo para nos ajudar a reproduzir e corrigir o problema.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Descrição do Problema"
+      description: "Descreva de forma clara o que está acontecendo."
+      placeholder: "Ex: Ao clicar em 'Salvar', o sistema retorna erro 500."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: "Comportamento Esperado"
+      description: "O que deveria acontecer?"
+      placeholder: "Ex: O usuário deveria ser salvo com sucesso."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: "Passos para Reproduzir"
+      description: "Liste os passos necessários para reproduzir o bug."
+      placeholder: |
+        1. Acesse a página X
+        2. Clique no botão Y
+        3. Observe o erro Z
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "Severidade"
+      description: "Qual o impacto deste bug?"
+      options:
+        - "Crítica (sistema indisponível)"
+        - "Alta (funcionalidade principal quebrada)"
+        - "Média (funcionalidade secundária afetada)"
+        - "Baixa (cosmético ou menor)"
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: "Ambiente"
+      description: "Onde o bug foi observado?"
+      placeholder: "Ex: Produção, Staging, Local (Node.js 20, Chrome 120)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logs ou Evidências"
+      description: "Cole logs, prints ou qualquer evidência relevante."
+      render: shell
+    validations:
+      required: false

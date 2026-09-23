@@ -26,7 +26,7 @@ Porta padrão: `http://localhost:8080` (nginx serve estáticos e faz proxy de
 | # | Cenário | Passos | Resultado esperado |
 |---|---------|--------|--------------------|
 | 1 | Criar tarefa | Digitar "Comprar leite" + descrição "2 litros" e salvar | Aparece na lista como "Pendente", título e descrição corretos |
-| 2 | Criar sem título | Deixar título vazio (ou só espaços) e salvar | Tarefa criada com título "Sem título", status "Pendente" |
+| 2 | Criar sem título | Deixar título vazio (ou só espaços) e salvar | Mensagem "Título é obrigatório." e tarefa não criada |
 | 3 | Título excedente | Digitar > 120 caracteres e salvar | Mensagem de erro clara; tarefa não criada |
 | 4 | Marcar concluída | Clicar no checkbox de uma tarefa pendente | Status muda para "Concluída" instantaneamente (visual < 1 s) |
 | 5 | Editar | Alterar título e/ou descrição | Valores atualizados refletidos na lista |
@@ -42,6 +42,9 @@ curl -s http://localhost:8080/api/tasks                       # lista
 curl -s -X POST http://localhost:8080/api/tasks \
   -H 'Content-Type: application/json' \
   -d '{"title":"Comprar leite","description":"2 litros"}'     # cria (201)
+curl -s -i -X POST http://localhost:8080/api/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"  "}'                                        # 400 — título obrigatório
 curl -s -X PUT http://localhost:8080/api/tasks/1 \
   -H 'Content-Type: application/json' \
   -d '{"status":"completed"}'                                 # conclui
@@ -57,7 +60,7 @@ cd backend && mvn test
 ```
 
 Esperado: suíte verde cobrindo todos os endpoints (criar/listar/visualizar/
-atualizar/excluir) e regras de negócio (título padrão, limite 120, status
+atualizar/excluir) e regras de negócio (título obrigatório, limite 120, status
 inválido, 404).
 
 ### E2E full-stack (Playwright)
