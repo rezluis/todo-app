@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "📖 Documentação"
+    url: "https://github.com/rezluis/todo-app/blob/main/README.md"
+    about: "Consulte a documentação antes de abrir uma issue."
+  - name: "💬 Discussões"
+    url: "https://github.com/rezluis/todo-app/discussions"
+    about: "Para dúvidas e discussões gerais, use o fórum."
