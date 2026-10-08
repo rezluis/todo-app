@@ -14,8 +14,9 @@ import com.todo.repo.TaskRepository;
 public class TaskService {
 
     public static final int MAX_TITLE_LENGTH = 120;
-    public static final String STATUS_PENDING = "pending";
-    public static final String STATUS_COMPLETED = "completed";
+    public static final String STATUS_TODO = "TODO";
+    public static final String STATUS_IN_PROGRESS = "IN_PROGRESS";
+    public static final String STATUS_DONE = "DONE";
 
     private final TaskRepository repository;
 
@@ -27,13 +28,20 @@ public class TaskService {
         String title = normalizeTitle(request.title());
         String description = request.description();
         long now = System.currentTimeMillis();
-        long id = repository.insert(new Task(null, title, description, STATUS_PENDING, now, now));
+        long id = repository.insert(new Task(null, title, description, STATUS_TODO, now, now));
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Falha ao gravar a tarefa."));
     }
 
     public List<Task> findAll() {
-        return repository.findAll();
+        return findAll(null);
+    }
+
+    public List<Task> findAll(String status) {
+        if (status == null) {
+            return repository.findAll();
+        }
+        return repository.findAllByStatus(validateStatus(status));
     }
 
     public Task findById(long id) {
@@ -70,8 +78,8 @@ public class TaskService {
     }
 
     private String validateStatus(String status) {
-        if (!STATUS_PENDING.equals(status) && !STATUS_COMPLETED.equals(status)) {
-            throw new IllegalArgumentException("Status inválido. Use 'pending' ou 'completed'.");
+        if (!STATUS_TODO.equals(status) && !STATUS_IN_PROGRESS.equals(status) && !STATUS_DONE.equals(status)) {
+            throw new IllegalArgumentException("Status inválido. Use 'TODO', 'IN_PROGRESS' ou 'DONE'.");
         }
         return status;
     }

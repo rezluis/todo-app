@@ -12,7 +12,7 @@ pessoal, um usuário).
   "id": 1,
   "title": "Comprar leite",
   "description": "2 litros",
-  "status": "pending",
+  "status": "TODO",
   "createdAt": 1726063200000,
   "updatedAt": 1726063200000
 }
@@ -23,7 +23,7 @@ pessoal, um usuário).
 | `id` | long | — (server) | gerado pelo banco |
 | `title` | string | sim | obrigatório (não vazio/blank); max 120 |
 | `description` | string | não | ausência tratada como sem descrição |
-| `status` | string | sim (na criação) | `pending` / `completed` |
+| `status` | string | sim (na criação) | `TODO` / `IN_PROGRESS` / `DONE` (case-sensitive, sem espaços) |
 | `createdAt` | long | — (server) | epoch ms |
 | `updatedAt` | long | — (server) | epoch ms |
 
@@ -31,7 +31,19 @@ pessoal, um usuário).
 
 ### `GET /api/tasks` — listar tarefas
 
-Resposta `200 OK` com array de tarefas na ordenação determinística (pendentes
+Query param opcional `status` (issue #8):
+
+| Valor de `status` | Comportamento |
+|-------------------|---------------|
+| ausente | retorna todas as tarefas |
+| `TODO`, `IN_PROGRESS` ou `DONE` | retorna apenas tarefas com esse status |
+| qualquer outro valor | `400 Bad Request` com `{ "message": "Status inválido. ..." }` |
+
+Regras de borda do filtro: o valor é comparado **case-sensitive** e **sem
+normalização de espaços** (`todo`, `" TODO "`, `"DONE "` → `400`); com
+múltiplos valores (`?status=TODO&status=DONE`), usa-se apenas o **primeiro**.
+
+Resposta `200 OK` com array de tarefas na ordenação determinística (não-`DONE`
 primeiro; dentro do grupo, mais recentes primeiro — `created_at DESC, id DESC`).
 
 ### `POST /api/tasks` — criar tarefa
@@ -43,7 +55,7 @@ Corpo (aplica-se edge case do título):
 ```
 
 - `201 Created` — corpo com a tarefa criada (incl. `id`, `createdAt`,
-  `updatedAt`; `status` assume `pending`).
+  `updatedAt`; `status` assume `TODO`).
 - `400 Bad Request` — título ausente, vazio ou só espaços, título > 120
   caracteres, `status` inválido no corpo ou payload malformado. Body de erro:
   `{ "message": "..." }`.
@@ -58,7 +70,7 @@ Corpo (aplica-se edge case do título):
 Corpo (campos opcionais; apenas os presentes são alterados):
 
 ```json
-{ "title": "Comprar leite e pão", "description": "1L desnatado", "status": "completed" }
+{ "title": "Comprar leite e pão", "description": "1L desnatado", "status": "DONE" }
 ```
 
 - `200 OK` — tarefa atualizada (com novos `updatedAt`).
@@ -90,6 +102,9 @@ Códigos utilizados: `400` (validação/payload), `404` (recurso inexistente),
 - Atualizar com `title` ausente ou `null` → campo mantém o valor atual (sem
   400). Atualizar com `title` `""` ou `"   "` → `400 Bad Request` com
   `{ "message": "Título é obrigatório." }` (FR-007).
-- `status` inválido NUNCA é aceito silenciosamente (400).
+- `status` inválido NUNCA é aceito silenciosamente (400) — no corpo do `PUT`
+  quanto no query param `status` do `GET /api/tasks`.
+- `GET /api/tasks?status=` com valor inválido, minúsculo ou com espaços → `400`;
+  sem o parâmetro → lista completa; parâmetro repetido → usa o primeiro.
 - Só espaços não equivalem a um título válido; a obrigatoriedade vale para o
   valor final do campo (após reconhecer `""`/espaços como vazio).

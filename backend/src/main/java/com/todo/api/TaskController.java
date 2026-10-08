@@ -2,6 +2,8 @@ package com.todo.api;
 
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +22,8 @@ import com.todo.service.TaskService;
 @RequestMapping("/api/tasks")
 public class TaskController {
 
+    private static final String STATUS_PARAM = "status";
+
     private final TaskService service;
 
     public TaskController(TaskService service) {
@@ -27,8 +31,13 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<Task> list() {
-        return service.findAll();
+    public List<Task> list(HttpServletRequest request) {
+        // Issue #8: lê os valores crus de ?status sem a conversão do Spring
+        // (@RequestParam trima/separa), pois a validação é case-sensitive e sem
+        // normalização; com múltiplos valores, usa apenas o primeiro.
+        String[] values = request.getParameterValues(STATUS_PARAM);
+        String status = values != null && values.length > 0 ? values[0] : null;
+        return service.findAll(status);
     }
 
     @GetMapping("/{id}")

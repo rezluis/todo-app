@@ -33,7 +33,7 @@ function showError(message) {
 }
 
 function taskListItem(task) {
-  const completed = task.status === 'completed';
+  const completed = task.status === 'DONE';
   const toggleLabel = completed ? 'Marcar como pendente' : 'Marcar como concluída';
   const description = task.description
     ? `<span class="task__description">${escapeHtml(task.description)}</span>`
@@ -97,7 +97,7 @@ listEl.addEventListener('change', async (event) => {
   if (!task) {
     return;
   }
-  const nextStatus = task.status === 'completed' ? 'pending' : 'completed';
+  const nextStatus = task.status === 'DONE' ? 'TODO' : 'DONE';
   task.status = nextStatus;
   render();
   try {

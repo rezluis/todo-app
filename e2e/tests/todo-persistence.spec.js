@@ -19,7 +19,7 @@ test('persiste tarefas e status após recarregar a página', async ({ page, requ
   await request.post('/api/tasks', { data: { title: 'Concluída viva', description: 'd2' } });
   const list = await (await request.get('/api/tasks')).json();
   const completed = list.find((t) => t.title === 'Concluída viva');
-  await request.put(`/api/tasks/${completed.id}`, { data: { status: 'completed' } });
+  await request.put(`/api/tasks/${completed.id}`, { data: { status: 'DONE' } });
 
   await page.goto('/');
   await expect(page.locator('.task')).toHaveCount(2);
@@ -38,7 +38,7 @@ test('exibe ordenação determinística pendentes primeiro e preserva após reca
     created.push((await (await request.post('/api/tasks', { data: { title } })).json()));
   }
   // Conclui "B": agora ordem esperada na UI = C, A (pendentes) e depois B (concluída).
-  await request.put(`/api/tasks/${created[1].id}`, { data: { status: 'completed' } });
+  await request.put(`/api/tasks/${created[1].id}`, { data: { status: 'DONE' } });
 
   await page.goto('/');
   let titles = await page.locator('.task__title').allTextContents();
