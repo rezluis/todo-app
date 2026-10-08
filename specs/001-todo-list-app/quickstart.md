@@ -32,13 +32,14 @@ Porta padrão: `http://localhost:8080` (nginx serve estáticos e faz proxy de
 | 5 | Editar | Alterar título e/ou descrição | Valores atualizados refletidos na lista |
 | 6 | Excluir | Remover uma tarefa | Some da lista |
 | 7 | Persistência | Criar/editaren/marcar algumas tarefas e recarregar a página (`F5`) | Tudo permanece com dados e status corretos |
-| 8 | Ordenação | Criar tarefas em status mistos | Pendentes antes de concluídas; mais recentes primeiro em cada grupo |
+| 8 | Ordenação | Criar tarefas em status mistos | Não concluídas antes das concluídas; mais recentes primeiro em cada grupo |
 | 9 | Lista vazia | Excluir todas as tarefas | Mensagem amigável de lista vazia |
 
 ## Verificação direta da API (alternativa aos cenários de UI)
 
 ```bash
 curl -s http://localhost:8080/api/tasks                       # lista
+curl -s 'http://localhost:8080/api/tasks?status=TODO'         # filtra por status (inválido → 400)
 curl -s -X POST http://localhost:8080/api/tasks \
   -H 'Content-Type: application/json' \
   -d '{"title":"Comprar leite","description":"2 litros"}'     # cria (201)
@@ -47,7 +48,7 @@ curl -s -i -X POST http://localhost:8080/api/tasks \
   -d '{"title":"  "}'                                        # 400 — título obrigatório
 curl -s -X PUT http://localhost:8080/api/tasks/1 \
   -H 'Content-Type: application/json' \
-  -d '{"status":"completed"}'                                 # conclui
+  -d '{"status":"DONE"}'                                     # conclui
 curl -s -i -X DELETE http://localhost:8080/api/tasks/1        # exclui (204)
 ```
 

@@ -14,6 +14,8 @@ import com.todo.domain.Task;
 @Repository
 public class TaskRepository {
 
+    private static final String ORDER_BY = "ORDER BY (status = 'DONE') ASC, created_at DESC, id DESC";
+
     private static final RowMapper<Task> ROW_MAPPER = (rs, rowNum) -> new Task(
             rs.getLong("id"),
             rs.getString("title"),
@@ -45,9 +47,11 @@ public class TaskRepository {
     }
 
     public List<Task> findAll() {
-        return jdbc.query(
-                "SELECT * FROM tasks ORDER BY (status = 'completed') ASC, created_at DESC, id DESC",
-                ROW_MAPPER);
+        return jdbc.query("SELECT * FROM tasks " + ORDER_BY, ROW_MAPPER);
+    }
+
+    public List<Task> findAllByStatus(String status) {
+        return jdbc.query("SELECT * FROM tasks WHERE status = ? " + ORDER_BY, ROW_MAPPER, status);
     }
 
     public Optional<Task> findById(long id) {

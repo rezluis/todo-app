@@ -46,10 +46,10 @@ ANTES da implementação (espera-se que falhem) e executadas em CI/validação.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [x] T005 Create `backend/src/main/resources/schema.sql` com tabela `tasks` idempotente (`CREATE TABLE IF NOT EXISTS`) seguindo data-model.md: colunas `id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT NOT NULL, `description` TEXT NULL, `status` TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','completed')), `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL; índice `idx_tasks_status_created` em `(status, created_at DESC)`
+- [x] T005 Create `backend/src/main/resources/schema.sql` com tabela `tasks` idempotente (`CREATE TABLE IF NOT EXISTS`) seguindo data-model.md: colunas `id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT NOT NULL, `description` TEXT NULL, `status` TEXT NOT NULL DEFAULT 'TODO' CHECK (status IN ('TODO','IN_PROGRESS','DONE')) (issue #8; bases existentes: migração `V2__status_domain_todo_inprogress_done.sql`), `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL; índice `idx_tasks_status_created` em `(status, created_at DESC)`
 - [x] T006 Configure `backend/src/main/resources/application.properties`: datasource `spring.datasource.url=jdbc:sqlite:${DB_PATH:/data/todo.db}` via env, `spring.datasource.driver-class-name=org.sqlite.JDBC`, `spring.sql.init.mode=always`, e `spring.datasource.hikari.connection-init-sql` executando `PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON;`
 - [x] T007 Create `Task` record em `backend/src/main/java/com/todo/domain/Task.java` com campos `id`,`title`,`description`,`status`,`createdAt`,`updatedAt` e mapeamento JSON camelCase↔colunas snake_case conforme data-model.md
-- [x] T008 Create `TaskRepository` em `backend/src/main/java/com/todo/repo/TaskRepository.java` com `JdbcTemplate`: `insert` (retorna id), `findAll` (ordenação `ORDER BY (status='completed'), created_at DESC, id DESC` — pendentes antes de concluídas, mais recentes primeiro, desempate por id), `findById`, `update`, `delete`
+- [x] T008 Create `TaskRepository` em `backend/src/main/java/com/todo/repo/TaskRepository.java` com `JdbcTemplate`: `insert` (retorna id), `findAll`/`findAllByStatus` (ordenação `ORDER BY (status='DONE') ASC, created_at DESC, id DESC` — não-DONE antes de DONE, mais recentes primeiro, desempate por id), `findById`, `update`, `delete`
 - [x] T009 [P] Create `RestExceptionHandler` em `backend/src/main/java/com/todo/api/RestExceptionHandler.java` retornando corpo de erro `{ "message": "..." }` para 400 (validação: título > 120 caracteres, status inválido, payload malformado), 404 (recurso inexistente) e 500, conforme contracts/api-rest.md
 - [x] T010 Create test infrastructure do backend: config base `@SpringBootTest` reutilizada por `backend/src/test/java/com/todo/api/TaskControllerTest.java` e `backend/src/test/java/com/todo/service/TaskServiceTest.java` (MockMvc + JsonPath)
 
@@ -67,12 +67,12 @@ ANTES da implementação (espera-se que falhem) e executadas em CI/validação.
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [x] T011 [P] [US1] Teste de serviço em `backend/src/test/java/com/todo/service/TaskServiceTest.java`: create com título preenchido, vazio, nulo e só espaços → grava "Sem título"; status default `pending`; `createdAt`/`updatedAt` preenchidos; título > 120 caracteres → erro 400
+- [x] T011 [P] [US1] Teste de serviço em `backend/src/test/java/com/todo/service/TaskServiceTest.java`: create com título preenchido, vazio, nulo e só espaços → grava "Sem título"; status default `TODO`; `createdAt`/`updatedAt` preenchidos; título > 120 caracteres → erro 400
 - [x] T012 [P] [US1] Teste de contrato em `backend/src/test/java/com/todo/api/TaskControllerTest.java`: `POST /api/tasks` retorna 201 com JSON conforme contracts/api-rest.md (id, title, description, status, createdAt, updatedAt)
 
 ### Implementation for User Story 1
 
-- [x] T013 [US1] Implement `TaskService.create` em `backend/src/main/java/com/todo/service/TaskService.java`: normaliza título (vazio/nulo/só espaços → "Sem título"), valida limite de 120 caracteres, default status `pending`, preenche `createdAt`/`updatedAt` (epoch ms)
+- [x] T013 [US1] Implement `TaskService.create` em `backend/src/main/java/com/todo/service/TaskService.java`: normaliza título (vazio/nulo/só espaços → "Sem título"), valida limite de 120 caracteres, default status `TODO`, preenche `createdAt`/`updatedAt` (epoch ms)
 - [x] T014 [US1] Implement `POST /api/tasks` em `backend/src/main/java/com/todo/api/TaskController.java` (201 + corpo da tarefa criada; 400 em validação)
 - [x] T015 [P] [US1] Implement `api.js` `createTask` em `frontend/js/api.js` (fetch POST `/api/tasks`, JSON, tratamento de erro) 
 - [x] T016 [P] [US1] Implement formulário de criação inline em `frontend/index.html` + estilo em `frontend/css/styles.css` (campo título, campo descrição, botão adicionar)
@@ -107,13 +107,13 @@ ANTES da implementação (espera-se que falhem) e executadas em CI/validação.
 
 ## Phase 5: User Story 3 - Marcar concluída com 1 clique (Priority: P1)
 
-**Goal**: Alternância `pending ⇄ completed` com um único clique, feedback visual < 1 s (FR-005, SC-002).
+**Goal**: Alternância `TODO ⇄ DONE` com um único clique, feedback visual < 1 s (FR-005, SC-002).
 
 **Independent Test**: Clicar no controle de uma tarefa e ver o status mudar imediatamente; estado persiste.
 
 ### Tests for User Story 3 (OBRIGATÓRIOS - constituição Princípio III) ⚠️
 
-- [x] T025 [P] [US3] Teste de contrato em `backend/src/test/java/com/todo/api/TaskControllerTest.java`: `PUT /api/tasks/{id}` com `status` `pending`→`completed` e volta retorna 200; status inválido → 400; id inexistente → 404
+- [x] T025 [P] [US3] Teste de contrato em `backend/src/test/java/com/todo/api/TaskControllerTest.java`: `PUT /api/tasks/{id}` com `status` `TODO`→`DONE` e volta retorna 200; status inválido → 400; id inexistente → 404
 - [x] T026 [P] [US3] Teste de serviço em `backend/src/test/java/com/todo/service/TaskServiceTest.java`: toggle de status atualiza `updatedAt` e mantém demais campos
 
 ### Implementation for User Story 3

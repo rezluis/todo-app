@@ -17,13 +17,13 @@ import com.todo.domain.Task;
 class TaskServiceTest extends BaseDbTest {
 
     @Test
-    void createWithValidTitleStoresPendingTaskWithTimestamps() {
+    void createWithValidTitleStoresTodoTaskWithTimestamps() {
         Task task = service.create(new TaskRequest("Comprar leite", "2 litros", null));
 
         assertThat(task.id()).isNotNull();
         assertThat(task.title()).isEqualTo("Comprar leite");
         assertThat(task.description()).isEqualTo("2 litros");
-        assertThat(task.status()).isEqualTo(TaskService.STATUS_PENDING);
+        assertThat(task.status()).isEqualTo(TaskService.STATUS_TODO);
         assertThat(task.createdAt()).isPositive();
         assertThat(task.updatedAt()).isEqualTo(task.createdAt());
     }
@@ -54,10 +54,10 @@ class TaskServiceTest extends BaseDbTest {
     }
 
     @Test
-    void findAllReturnsDeterministicOrderPendingFirstThenNewest() {
-        repository.insert(new Task(null, "antiga-pendente", null, TaskService.STATUS_PENDING, 1000, 1000));
-        repository.insert(new Task(null, "nova-pendente", null, TaskService.STATUS_PENDING, 2000, 2000));
-        repository.insert(new Task(null, "concluida", null, TaskService.STATUS_COMPLETED, 3000, 3000));
+    void findAllReturnsDeterministicOrderNotDoneFirstThenNewest() {
+        repository.insert(new Task(null, "antiga-pendente", null, TaskService.STATUS_TODO, 1000, 1000));
+        repository.insert(new Task(null, "nova-pendente", null, TaskService.STATUS_TODO, 2000, 2000));
+        repository.insert(new Task(null, "concluida", null, TaskService.STATUS_DONE, 3000, 3000));
 
         List<Task> tasks = service.findAll();
 
@@ -84,15 +84,15 @@ class TaskServiceTest extends BaseDbTest {
     void updateToggleStatusKeepsOtherFieldsAndRefreshesUpdatedAt() {
         Task created = service.create(new TaskRequest("Só status", null, null));
 
-        Task pending = service.update(created.id(), new TaskRequest(null, null, TaskService.STATUS_PENDING));
-        Task completed = service.update(created.id(), new TaskRequest(null, null, TaskService.STATUS_COMPLETED));
-        Task backToPending = service.update(created.id(), new TaskRequest(null, null, TaskService.STATUS_PENDING));
+        Task todo = service.update(created.id(), new TaskRequest(null, null, TaskService.STATUS_TODO));
+        Task done = service.update(created.id(), new TaskRequest(null, null, TaskService.STATUS_DONE));
+        Task backToTodo = service.update(created.id(), new TaskRequest(null, null, TaskService.STATUS_TODO));
 
-        assertThat(pending.status()).isEqualTo(TaskService.STATUS_PENDING);
-        assertThat(completed.status()).isEqualTo(TaskService.STATUS_COMPLETED);
-        assertThat(backToPending.status()).isEqualTo(TaskService.STATUS_PENDING);
-        assertThat(backToPending.title()).isEqualTo("Só status");
-        assertThat(backToPending.updatedAt()).isGreaterThanOrEqualTo(created.updatedAt());
+        assertThat(todo.status()).isEqualTo(TaskService.STATUS_TODO);
+        assertThat(done.status()).isEqualTo(TaskService.STATUS_DONE);
+        assertThat(backToTodo.status()).isEqualTo(TaskService.STATUS_TODO);
+        assertThat(backToTodo.title()).isEqualTo("Só status");
+        assertThat(backToTodo.updatedAt()).isGreaterThanOrEqualTo(created.updatedAt());
     }
 
     @Test

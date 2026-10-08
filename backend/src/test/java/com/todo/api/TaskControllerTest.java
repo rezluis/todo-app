@@ -33,7 +33,7 @@ class TaskControllerTest extends BaseDbTest {
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.title").value("Comprar leite"))
                 .andExpect(jsonPath("$.description").value("2 litros"))
-                .andExpect(jsonPath("$.status").value("pending"))
+                .andExpect(jsonPath("$.status").value("TODO"))
                 .andExpect(jsonPath("$.createdAt").isNumber())
                 .andExpect(jsonPath("$.updatedAt").isNumber());
     }
@@ -75,9 +75,9 @@ class TaskControllerTest extends BaseDbTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
 
-        repository.insert(new Task(null, "antiga-pendente", null, TaskService.STATUS_PENDING, 1000, 1000));
-        repository.insert(new Task(null, "nova-pendente", null, TaskService.STATUS_PENDING, 2000, 2000));
-        repository.insert(new Task(null, "concluida", null, TaskService.STATUS_COMPLETED, 3000, 3000));
+        repository.insert(new Task(null, "antiga-pendente", null, TaskService.STATUS_TODO, 1000, 1000));
+        repository.insert(new Task(null, "nova-pendente", null, TaskService.STATUS_TODO, 2000, 2000));
+        repository.insert(new Task(null, "concluida", null, TaskService.STATUS_DONE, 3000, 3000));
 
         mockMvc.perform(get("/api/tasks"))
                 .andExpect(status().isOk())
@@ -106,15 +106,15 @@ class TaskControllerTest extends BaseDbTest {
 
         mockMvc.perform(put("/api/tasks/{id}", created.id())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"status\":\"completed\"}"))
+                        .content("{\"status\":\"DONE\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("completed"));
+                .andExpect(jsonPath("$.status").value("DONE"));
 
         mockMvc.perform(put("/api/tasks/{id}", created.id())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"status\":\"pending\"}"))
+                        .content("{\"status\":\"TODO\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("pending"));
+                .andExpect(jsonPath("$.status").value("TODO"));
 
         mockMvc.perform(put("/api/tasks/{id}", created.id())
                         .contentType(MediaType.APPLICATION_JSON)
